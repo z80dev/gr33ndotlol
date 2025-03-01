@@ -93,6 +93,11 @@ const GreentextGenerator = () => {
   const handleTextChange = (e) => {
     setText(e.target.value);
   };
+  
+  // Clear text input
+  const handleClearText = () => {
+    setText('');
+  };
 
   // Handle image upload
   const handleImageUpload = (e) => {
@@ -364,7 +369,16 @@ const GreentextGenerator = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block mb-2 font-medium text-gray-800 dark:text-gray-200">Greentext Story:</label>
+            <div className="flex justify-between mb-2">
+              <label className="font-medium text-gray-800 dark:text-gray-200">Greentext Story:</label>
+              <button
+                onClick={handleClearText}
+                className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
+                title="Clear text"
+              >
+                Clear All
+              </button>
+            </div>
             <textarea
               value={text}
               onChange={handleTextChange}
