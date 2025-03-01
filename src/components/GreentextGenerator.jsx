@@ -30,8 +30,8 @@ const BOARD_THEMES = {
     secondaryText: "text-gray-600",
     // Green text color stays default
   },
-  tomorrow: {
-    name: "Tomorrow",
+  serious: {
+    name: "Serious",
     postBg: "bg-blue-200", // Blue background for /biz/ style
     headerBg: "bg-blue-300", // Lighter blue header
     borderColor: "border-blue-400", 
@@ -98,7 +98,7 @@ const GreentextGenerator = () => {
     return text.split('\n').map((line, index) => {
       // If line starts with '>', color it green
       if (line.trim().startsWith('>')) {
-        // Use custom green color for Tomorrow theme, default for others
+        // Use custom green color for Serious theme, default for others
         const greenColorClass = BOARD_THEMES[boardTheme].greenTextColor || "text-green-500";
         return (
           <p key={index} className={greenColorClass}>{line}</p>
@@ -127,7 +127,7 @@ const GreentextGenerator = () => {
       'bg-amber-100': '#fef3c7', 
       // Yotsuba theme
       'bg-amber-50': '#fffbeb',
-      // Tomorrow theme (blue for /biz/)
+      // Serious theme (blue for /biz/)
       'bg-blue-200': '#bfdbfe',
       // Yotsuba Pink theme
       'bg-pink-50': '#fdf2f8'
@@ -352,7 +352,7 @@ const GreentextGenerator = () => {
         <ul className="list-disc pl-5 space-y-1 text-gray-800 dark:text-gray-200">
           <li>Enter text in the text area. Lines that start with "&gt;" will be green.</li>
           <li>Customize the anonymous name, post number, and date if desired.</li>
-          <li>Choose from different board themes to style your post (Classic /b/, Yotsuba, Tomorrow /biz/, or Yotsuba Pink).</li>
+          <li>Choose from different board themes to style your post (Classic, Yotsuba, Serious, or Yotsuba Pink).</li>
           <li>Optionally upload an image to include with your post.</li>
           <li>The preview will update in real-time as you type.</li>
           <li>Click "Save as PNG" to download your creation as a PNG image.</li>
