@@ -4,6 +4,7 @@
 - `npm start` - Start development server with hot reload (port 3000)
 - `npm run host` - Start development server exposed to local network (accessible from other devices)
 - `npm run build` - Build production bundle
+- `npm run generate-assets` - Generate social media preview images and favicon
 
 ## Project Structure
 - React 19 functional components with hooks

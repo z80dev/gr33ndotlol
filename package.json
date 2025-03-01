@@ -6,12 +6,15 @@
   "scripts": {
     "start": "webpack serve --mode development --open",
     "host": "webpack serve --mode development --host 0.0.0.0 --allowed-hosts all",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "generate-assets": "node scripts/generate-assets.js",
+    "prebuild": "npm run generate-assets"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^2.11.2",
     "html-to-image": "^1.11.13",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -22,6 +25,7 @@
     "@babel/preset-react": "^7.26.3",
     "autoprefixer": "^10.4.20",
     "babel-loader": "^10.0.0",
+    "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",
     "postcss": "^8.5.3",
