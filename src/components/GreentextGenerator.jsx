@@ -7,7 +7,48 @@ const SAMPLE_GREENTEXT = `>be me
 >working on greentext app
 >finally implement the save as PNG feature
 >implement dark mode too
+>add multiple board color themes
 >feels good man`;
+
+// Board theme color schemes
+const BOARD_THEMES = {
+  classic: {
+    name: "Classic 4chan",
+    postBg: "bg-gray-100 dark:bg-gray-800",
+    headerBg: "bg-gray-200 dark:bg-gray-700",
+    borderColor: "border-gray-300 dark:border-gray-700",
+    textColor: "text-gray-900 dark:text-gray-100",
+    secondaryText: "text-gray-600 dark:text-gray-400",
+    // Green text color stays default
+  },
+  yotsuba: { 
+    name: "Yotsuba",
+    postBg: "bg-amber-50",
+    headerBg: "bg-amber-100",
+    borderColor: "border-amber-200",
+    textColor: "text-gray-900",
+    secondaryText: "text-gray-600",
+    // Green text color stays default
+  },
+  tomorrow: {
+    name: "Tomorrow",
+    postBg: "bg-slate-800",
+    headerBg: "bg-slate-700",
+    borderColor: "border-slate-600",
+    textColor: "text-gray-100",
+    secondaryText: "text-gray-400",
+    // Green text color stays default
+  },
+  yotsubaPink: {
+    name: "Yotsuba Pink",
+    postBg: "bg-pink-50",
+    headerBg: "bg-pink-100",
+    borderColor: "border-pink-200",
+    textColor: "text-gray-900",
+    secondaryText: "text-gray-600",
+    // Green text color stays default
+  }
+};
 
 const GreentextGenerator = () => {
   const [text, setText] = useState(SAMPLE_GREENTEXT);
@@ -16,6 +57,7 @@ const GreentextGenerator = () => {
   const [postNumber, setPostNumber] = useState('12345678');
   const [dateTime, setDateTime] = useState(new Date().toLocaleString());
   const [isSaving, setIsSaving] = useState(false);
+  const [boardTheme, setBoardTheme] = useState("classic");
   
   const { darkMode } = useContext(ThemeContext);
   const fileInputRef = useRef(null);
@@ -75,6 +117,28 @@ const GreentextGenerator = () => {
     setDateTime(new Date().toLocaleString());
   };
 
+  // Helper to get the background color based on the theme
+  const getThemeBgColor = () => {
+    // Map of Tailwind classes to actual color values
+    const bgColorMap = {
+      // Classic theme
+      'bg-gray-100': '#f3f4f6',
+      'bg-gray-800': '#1f2937',
+      // Yotsuba theme
+      'bg-amber-50': '#fffbeb',
+      // Tomorrow theme
+      'bg-slate-800': '#1e293b',
+      // Yotsuba Pink theme
+      'bg-pink-50': '#fdf2f8'
+    };
+    
+    // Get the theme's background class
+    const bgClass = BOARD_THEMES[boardTheme].postBg.split(' ')[darkMode ? 1 : 0];
+    
+    // Return the corresponding color value or a fallback
+    return bgColorMap[bgClass] || (darkMode ? '#1f2937' : '#f3f4f6');
+  };
+
   // Save as PNG image
   const saveAsPng = () => {
     if (!greentextRef.current) return;
@@ -83,14 +147,15 @@ const GreentextGenerator = () => {
     
     // Generate a filename based on the first line of text or default
     const firstLine = text.split('\n')[0] || 'greentext';
-    const filename = `${firstLine.substring(0, 20).replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${Date.now()}.png`;
+    const filename = `${firstLine.substring(0, 20).replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${boardTheme}_${Date.now()}.png`;
     
-    // Make sure to save the current theme state when saving image
+    // Get the background color based on current theme
+    const bgColor = getThemeBgColor();
+    
     toPng(greentextRef.current, { 
       cacheBust: true,
       style: {
-        // Ensure the image captures current theme colors
-        backgroundColor: darkMode ? '#111827' : '#f3f4f6'
+        backgroundColor: bgColor
       }
     })
       .then((dataUrl) => {
@@ -173,6 +238,28 @@ const GreentextGenerator = () => {
           </div>
 
           <div className="mb-4">
+            <label className="block mb-2 font-medium text-gray-800 dark:text-gray-200">Board Theme:</label>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.keys(BOARD_THEMES).map((themeKey) => (
+                <button
+                  key={themeKey}
+                  onClick={() => setBoardTheme(themeKey)}
+                  className={`p-2 rounded border transition-all ${
+                    themeKey === boardTheme 
+                      ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-300 dark:ring-blue-700' 
+                      : 'border-gray-300 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500'
+                  } ${BOARD_THEMES[themeKey].postBg}`}
+                >
+                  <div className={`text-xs font-semibold mb-1 ${BOARD_THEMES[themeKey].textColor}`}>
+                    {BOARD_THEMES[themeKey].name}
+                  </div>
+                  <div className={`h-4 w-full rounded ${BOARD_THEMES[themeKey].headerBg}`}></div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
             <label className="block mb-2 font-medium text-gray-800 dark:text-gray-200">Upload Image (optional):</label>
             <input
               type="file"
@@ -215,22 +302,22 @@ const GreentextGenerator = () => {
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Preview</h2>
           <div 
             ref={greentextRef} 
-            className="bg-gray-100 dark:bg-gray-800 p-4 rounded shadow mb-4 transition-colors duration-200"
+            className={`${BOARD_THEMES[boardTheme].postBg} p-4 rounded shadow mb-4 transition-colors duration-200`}
           >
-            <div className="bg-gray-200 dark:bg-gray-700 p-2 rounded mb-2 flex justify-between transition-colors duration-200">
-              <span className="font-medium text-gray-900 dark:text-gray-100">{anonymousName}</span>
-              <span className="text-gray-600 dark:text-gray-400 text-sm">{dateTime} No.{postNumber}</span>
+            <div className={`${BOARD_THEMES[boardTheme].headerBg} p-2 rounded mb-2 flex justify-between transition-colors duration-200`}>
+              <span className={`font-medium ${BOARD_THEMES[boardTheme].textColor}`}>{anonymousName}</span>
+              <span className={`${BOARD_THEMES[boardTheme].secondaryText} text-sm`}>{dateTime} No.{postNumber}</span>
             </div>
             {imagePreview && (
               <div className="mb-2">
                 <img
                   src={imagePreview}
                   alt="Post"
-                  className="max-w-full max-h-96 border border-gray-300 dark:border-gray-700"
+                  className={`max-w-full max-h-96 border ${BOARD_THEMES[boardTheme].borderColor}`}
                 />
               </div>
             )}
-            <div className="font-mono text-sm whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+            <div className={`font-mono text-sm whitespace-pre-wrap ${BOARD_THEMES[boardTheme].textColor}`}>
               {processGreentextLines(text)}
             </div>
           </div>
@@ -264,10 +351,11 @@ const GreentextGenerator = () => {
         <ul className="list-disc pl-5 space-y-1 text-gray-800 dark:text-gray-200">
           <li>Enter text in the text area. Lines that start with "&gt;" will be green.</li>
           <li>Customize the anonymous name, post number, and date if desired.</li>
+          <li>Choose from different board themes to style your post (Classic, Yotsuba, Tomorrow, or Yotsuba Pink).</li>
           <li>Optionally upload an image to include with your post.</li>
           <li>The preview will update in real-time as you type.</li>
           <li>Click "Save as PNG" to download your creation as a PNG image.</li>
-          <li>Toggle between light and dark mode using the button in the top-right corner.</li>
+          <li>Toggle between light and dark mode using the button in the top-right corner (affects UI only).</li>
         </ul>
       </div>
     </div>
