@@ -13,12 +13,12 @@ const SAMPLE_GREENTEXT = `>be me
 // Board theme color schemes
 const BOARD_THEMES = {
   classic: {
-    name: "Classic 4chan",
-    postBg: "bg-gray-100 dark:bg-gray-800",
-    headerBg: "bg-gray-200 dark:bg-gray-700",
-    borderColor: "border-gray-300 dark:border-gray-700",
-    textColor: "text-gray-900 dark:text-gray-100",
-    secondaryText: "text-gray-600 dark:text-gray-400",
+    name: "Classic",
+    postBg: "bg-amber-100", // Light yellow background, no dark mode variant
+    headerBg: "bg-red-200", // Reddish-peach header for /b/ style
+    borderColor: "border-amber-200",
+    textColor: "text-gray-900",
+    secondaryText: "text-gray-600",
     // Green text color stays default
   },
   yotsuba: { 
@@ -32,11 +32,11 @@ const BOARD_THEMES = {
   },
   tomorrow: {
     name: "Tomorrow",
-    postBg: "bg-slate-800",
-    headerBg: "bg-slate-700",
-    borderColor: "border-slate-600",
+    postBg: "bg-blue-900", // Blue background for /biz/ style
+    headerBg: "bg-blue-800", // Darker blue header
+    borderColor: "border-blue-700",
     textColor: "text-gray-100",
-    secondaryText: "text-gray-400",
+    secondaryText: "text-gray-300",
     // Green text color stays default
   },
   yotsubaPink: {
@@ -122,21 +122,20 @@ const GreentextGenerator = () => {
     // Map of Tailwind classes to actual color values
     const bgColorMap = {
       // Classic theme
-      'bg-gray-100': '#f3f4f6',
-      'bg-gray-800': '#1f2937',
+      'bg-amber-100': '#fef3c7', 
       // Yotsuba theme
       'bg-amber-50': '#fffbeb',
-      // Tomorrow theme
-      'bg-slate-800': '#1e293b',
+      // Tomorrow theme (blue for /biz/)
+      'bg-blue-900': '#1e3a8a',
       // Yotsuba Pink theme
       'bg-pink-50': '#fdf2f8'
     };
     
-    // Get the theme's background class
-    const bgClass = BOARD_THEMES[boardTheme].postBg.split(' ')[darkMode ? 1 : 0];
+    // Get the theme's background class - no need to check for dark mode variants
+    const bgClass = BOARD_THEMES[boardTheme].postBg;
     
     // Return the corresponding color value or a fallback
-    return bgColorMap[bgClass] || (darkMode ? '#1f2937' : '#f3f4f6');
+    return bgColorMap[bgClass] || '#f3f4f6';
   };
 
   // Save as PNG image
@@ -351,7 +350,7 @@ const GreentextGenerator = () => {
         <ul className="list-disc pl-5 space-y-1 text-gray-800 dark:text-gray-200">
           <li>Enter text in the text area. Lines that start with "&gt;" will be green.</li>
           <li>Customize the anonymous name, post number, and date if desired.</li>
-          <li>Choose from different board themes to style your post (Classic, Yotsuba, Tomorrow, or Yotsuba Pink).</li>
+          <li>Choose from different board themes to style your post (Classic /b/, Yotsuba, Tomorrow /biz/, or Yotsuba Pink).</li>
           <li>Optionally upload an image to include with your post.</li>
           <li>The preview will update in real-time as you type.</li>
           <li>Click "Save as PNG" to download your creation as a PNG image.</li>
