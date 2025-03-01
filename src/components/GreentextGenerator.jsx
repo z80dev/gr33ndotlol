@@ -1,10 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { toPng } from 'html-to-image';
+import { ThemeContext } from '../contexts/ThemeContext';
 
 const SAMPLE_GREENTEXT = `>be me
 >software developer
 >working on greentext app
 >finally implement the save as PNG feature
+>implement dark mode too
 >feels good man`;
 
 const GreentextGenerator = () => {
@@ -15,6 +17,7 @@ const GreentextGenerator = () => {
   const [dateTime, setDateTime] = useState(new Date().toLocaleString());
   const [isSaving, setIsSaving] = useState(false);
   
+  const { darkMode } = useContext(ThemeContext);
   const fileInputRef = useRef(null);
   const greentextRef = useRef(null);
 
@@ -82,7 +85,14 @@ const GreentextGenerator = () => {
     const firstLine = text.split('\n')[0] || 'greentext';
     const filename = `${firstLine.substring(0, 20).replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${Date.now()}.png`;
     
-    toPng(greentextRef.current, { cacheBust: true })
+    // Make sure to save the current theme state when saving image
+    toPng(greentextRef.current, { 
+      cacheBust: true,
+      style: {
+        // Ensure the image captures current theme colors
+        backgroundColor: darkMode ? '#111827' : '#f3f4f6'
+      }
+    })
       .then((dataUrl) => {
         const link = document.createElement('a');
         link.download = filename;
@@ -98,36 +108,36 @@ const GreentextGenerator = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Greentext Story Generator</h1>
+    <div className="max-w-4xl mx-auto p-4 pt-16 transition-colors duration-200 text-gray-900 dark:text-gray-100">
+      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Greentext Story Generator</h1>
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Input Section */}
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="text-xl font-semibold mb-4">Create Your Greentext</h2>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow transition-colors duration-200">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Create Your Greentext</h2>
 
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Anonymous Name:</label>
+            <label className="block mb-2 font-medium text-gray-800 dark:text-gray-200">Anonymous Name:</label>
             <input
               type="text"
               value={anonymousName}
               onChange={(e) => setAnonymousName(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors duration-200"
             />
           </div>
 
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Post Number:</label>
+            <label className="block mb-2 font-medium text-gray-800 dark:text-gray-200">Post Number:</label>
             <div className="flex">
               <input
                 type="text"
                 value={postNumber}
                 onChange={(e) => setPostNumber(e.target.value)}
-                className="w-full p-2 border rounded mr-2"
+                className="w-full p-2 border rounded mr-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors duration-200"
               />
               <button
                 onClick={generateRandomPostNumber}
-                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
+                className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 px-3 py-2 rounded text-gray-800 dark:text-gray-200 transition-colors duration-200"
               >
                 Random
               </button>
@@ -135,17 +145,17 @@ const GreentextGenerator = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Date & Time:</label>
+            <label className="block mb-2 font-medium text-gray-800 dark:text-gray-200">Date & Time:</label>
             <div className="flex">
               <input
                 type="text"
                 value={dateTime}
                 onChange={(e) => setDateTime(e.target.value)}
-                className="w-full p-2 border rounded mr-2"
+                className="w-full p-2 border rounded mr-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors duration-200"
               />
               <button
                 onClick={updateDateTime}
-                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
+                className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 px-3 py-2 rounded text-gray-800 dark:text-gray-200 transition-colors duration-200"
               >
                 Now
               </button>
@@ -153,17 +163,17 @@ const GreentextGenerator = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Greentext Story:</label>
+            <label className="block mb-2 font-medium text-gray-800 dark:text-gray-200">Greentext Story:</label>
             <textarea
               value={text}
               onChange={handleTextChange}
               placeholder="Enter your greentext here. Start lines with > for green text."
-              className="w-full p-2 border rounded h-40"
+              className="w-full p-2 border rounded h-40 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors duration-200"
             />
           </div>
 
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Upload Image (optional):</label>
+            <label className="block mb-2 font-medium text-gray-800 dark:text-gray-200">Upload Image (optional):</label>
             <input
               type="file"
               ref={fileInputRef}
@@ -174,14 +184,14 @@ const GreentextGenerator = () => {
             <div className="flex space-x-2">
               <button
                 onClick={handleUploadClick}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors duration-200"
               >
                 Upload Image
               </button>
               {imagePreview && (
                 <button
                   onClick={handleRemoveImage}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                  className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white px-4 py-2 rounded transition-colors duration-200"
                 >
                   Remove Image
                 </button>
@@ -189,11 +199,11 @@ const GreentextGenerator = () => {
             </div>
             {imagePreview && (
               <div className="mt-2">
-                <p className="text-sm text-gray-600 mb-1">Image preview:</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Image preview:</p>
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="max-h-40 border"
+                  className="max-h-40 border border-gray-300 dark:border-gray-700"
                 />
               </div>
             )}
@@ -202,25 +212,25 @@ const GreentextGenerator = () => {
 
         {/* Preview Section */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Preview</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Preview</h2>
           <div 
             ref={greentextRef} 
-            className="bg-gray-100 p-4 rounded shadow mb-4"
+            className="bg-gray-100 dark:bg-gray-800 p-4 rounded shadow mb-4 transition-colors duration-200"
           >
-            <div className="bg-gray-200 p-2 rounded mb-2 flex justify-between">
-              <span className="font-medium">{anonymousName}</span>
-              <span className="text-gray-600 text-sm">{dateTime} No.{postNumber}</span>
+            <div className="bg-gray-200 dark:bg-gray-700 p-2 rounded mb-2 flex justify-between transition-colors duration-200">
+              <span className="font-medium text-gray-900 dark:text-gray-100">{anonymousName}</span>
+              <span className="text-gray-600 dark:text-gray-400 text-sm">{dateTime} No.{postNumber}</span>
             </div>
             {imagePreview && (
               <div className="mb-2">
                 <img
                   src={imagePreview}
                   alt="Post"
-                  className="max-w-full max-h-96 border"
+                  className="max-w-full max-h-96 border border-gray-300 dark:border-gray-700"
                 />
               </div>
             )}
-            <div className="font-mono text-sm whitespace-pre-wrap">
+            <div className="font-mono text-sm whitespace-pre-wrap text-gray-900 dark:text-gray-100">
               {processGreentextLines(text)}
             </div>
           </div>
@@ -230,9 +240,9 @@ const GreentextGenerator = () => {
             disabled={isSaving}
             className={`${
               isSaving 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-green-500 hover:bg-green-600'
-            } text-white px-4 py-2 rounded w-full flex justify-center items-center`}
+                ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed' 
+                : 'bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700'
+            } text-white px-4 py-2 rounded w-full flex justify-center items-center transition-colors duration-200`}
           >
             {isSaving ? (
               <>
@@ -249,14 +259,15 @@ const GreentextGenerator = () => {
         </div>
       </div>
 
-      <div className="mt-6 bg-white p-4 rounded shadow">
-        <h2 className="text-xl font-semibold mb-2">How to Use</h2>
-        <ul className="list-disc pl-5 space-y-1">
+      <div className="mt-6 bg-white dark:bg-gray-800 p-4 rounded shadow transition-colors duration-200">
+        <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">How to Use</h2>
+        <ul className="list-disc pl-5 space-y-1 text-gray-800 dark:text-gray-200">
           <li>Enter text in the text area. Lines that start with "&gt;" will be green.</li>
           <li>Customize the anonymous name, post number, and date if desired.</li>
           <li>Optionally upload an image to include with your post.</li>
           <li>The preview will update in real-time as you type.</li>
           <li>Click "Save as PNG" to download your creation as a PNG image.</li>
+          <li>Toggle between light and dark mode using the button in the top-right corner.</li>
         </ul>
       </div>
     </div>
