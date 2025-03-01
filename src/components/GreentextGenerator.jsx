@@ -69,6 +69,24 @@ const GreentextGenerator = () => {
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(isIOSDevice);
+    
+    // Clean up any preview elements when component unmounts
+    return () => {
+      const elements = [
+        document.getElementById('greentext-preview-img'),
+        document.getElementById('greentext-preview-instruction'),
+        document.getElementById('greentext-preview-close')
+      ];
+      
+      for (const element of elements) {
+        if (element) {
+          if (element.tagName === 'IMG' && element.src) {
+            URL.revokeObjectURL(element.src);
+          }
+          element.remove();
+        }
+      }
+    };
   }, []);
 
   // Handle text input changes
@@ -164,6 +182,29 @@ const GreentextGenerator = () => {
     
     // Special handling for iOS
     if (isIOS) {
+      // Clean up any existing image previews first to prevent duplicates
+      const cleanupExistingPreviews = () => {
+        // Remove any existing preview elements by their IDs
+        const existingElements = [
+          document.getElementById('greentext-preview-img'),
+          document.getElementById('greentext-preview-instruction'),
+          document.getElementById('greentext-preview-close')
+        ];
+        
+        for (const element of existingElements) {
+          if (element) {
+            // If there's an image, revoke its object URL to prevent memory leaks
+            if (element.tagName === 'IMG' && element.src) {
+              URL.revokeObjectURL(element.src);
+            }
+            element.remove();
+          }
+        }
+      };
+      
+      // First clean up any existing previews
+      cleanupExistingPreviews();
+      
       // For iOS we need a different approach that's more photo-library friendly
       toBlob(greentextRef.current, {
         cacheBust: true,
@@ -177,6 +218,7 @@ const GreentextGenerator = () => {
         // Create an img element to show the image that can be saved to library
         const img = document.createElement('img');
         img.src = URL.createObjectURL(blob);
+        img.id = 'greentext-preview-img';
         
         // Style to make it fill the screen
         img.style.position = 'fixed';
@@ -189,13 +231,11 @@ const GreentextGenerator = () => {
         img.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
         
         // Add click handler to remove when clicked
-        img.onclick = () => {
-          document.body.removeChild(img);
-          URL.revokeObjectURL(img.src);
-        };
+        img.onclick = () => cleanupExistingPreviews();
         
         // Add instruction overlay
         const instruction = document.createElement('div');
+        instruction.id = 'greentext-preview-instruction';
         instruction.textContent = 'Press and hold to save image to your photo library';
         instruction.style.position = 'fixed';
         instruction.style.bottom = '60px';
@@ -207,12 +247,9 @@ const GreentextGenerator = () => {
         instruction.style.zIndex = '10000';
         instruction.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
         
-        // Append to document
-        document.body.appendChild(img);
-        document.body.appendChild(instruction);
-        
         // Add a close button
         const closeBtn = document.createElement('button');
+        closeBtn.id = 'greentext-preview-close';
         closeBtn.textContent = 'Close';
         closeBtn.style.position = 'fixed';
         closeBtn.style.bottom = '20px';
@@ -224,13 +261,21 @@ const GreentextGenerator = () => {
         closeBtn.style.border = 'none';
         closeBtn.style.borderRadius = '4px';
         closeBtn.style.zIndex = '10000';
-        closeBtn.onclick = () => {
-          document.body.removeChild(img);
-          document.body.removeChild(instruction);
-          document.body.removeChild(closeBtn);
-          URL.revokeObjectURL(img.src);
-        };
+        closeBtn.onclick = () => cleanupExistingPreviews();
+        
+        // Append to document
+        document.body.appendChild(img);
+        document.body.appendChild(instruction);
         document.body.appendChild(closeBtn);
+        
+        // Add event listener to handle escape key
+        const handleEscape = (e) => {
+          if (e.key === 'Escape') {
+            cleanupExistingPreviews();
+            document.removeEventListener('keydown', handleEscape);
+          }
+        };
+        document.addEventListener('keydown', handleEscape);
         
         setIsSaving(false);
       })
