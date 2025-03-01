@@ -1,5 +1,5 @@
-import React, { useState, useRef, useContext } from 'react';
-import { toPng } from 'html-to-image';
+import React, { useState, useRef, useContext, useEffect } from 'react';
+import { toPng, toBlob } from 'html-to-image';
 import { ThemeContext } from '../contexts/ThemeContext';
 
 const SAMPLE_GREENTEXT = `>be me
@@ -58,10 +58,18 @@ const GreentextGenerator = () => {
   const [dateTime, setDateTime] = useState(new Date().toLocaleString());
   const [isSaving, setIsSaving] = useState(false);
   const [boardTheme, setBoardTheme] = useState("classic");
+  const [isIOS, setIsIOS] = useState(false);
   
   const { darkMode } = useContext(ThemeContext);
   const fileInputRef = useRef(null);
   const greentextRef = useRef(null);
+  
+  // Detect iOS device
+  useEffect(() => {
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    setIsIOS(isIOSDevice);
+  }, []);
 
   // Handle text input changes
   const handleTextChange = (e) => {
@@ -140,6 +148,7 @@ const GreentextGenerator = () => {
     return bgColorMap[bgClass] || '#f3f4f6';
   };
 
+
   // Save as PNG image
   const saveAsPng = () => {
     if (!greentextRef.current) return;
@@ -153,12 +162,92 @@ const GreentextGenerator = () => {
     // Get the background color based on current theme
     const bgColor = getThemeBgColor();
     
-    toPng(greentextRef.current, { 
-      cacheBust: true,
-      style: {
-        backgroundColor: bgColor
-      }
-    })
+    // Special handling for iOS
+    if (isIOS) {
+      // For iOS we need a different approach that's more photo-library friendly
+      toBlob(greentextRef.current, {
+        cacheBust: true,
+        style: {
+          backgroundColor: bgColor
+        },
+        // Set this explicitly to fix iOS rendering issues with the uploaded image
+        pixelRatio: window.devicePixelRatio || 1
+      })
+      .then((blob) => {
+        // Create an img element to show the image that can be saved to library
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(blob);
+        
+        // Style to make it fill the screen
+        img.style.position = 'fixed';
+        img.style.top = '0';
+        img.style.left = '0';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'contain';
+        img.style.zIndex = '9999';
+        img.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        
+        // Add click handler to remove when clicked
+        img.onclick = () => {
+          document.body.removeChild(img);
+          URL.revokeObjectURL(img.src);
+        };
+        
+        // Add instruction overlay
+        const instruction = document.createElement('div');
+        instruction.textContent = 'Press and hold to save image to your photo library';
+        instruction.style.position = 'fixed';
+        instruction.style.bottom = '60px';
+        instruction.style.left = '0';
+        instruction.style.right = '0';
+        instruction.style.textAlign = 'center';
+        instruction.style.color = 'white';
+        instruction.style.padding = '10px';
+        instruction.style.zIndex = '10000';
+        instruction.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        
+        // Append to document
+        document.body.appendChild(img);
+        document.body.appendChild(instruction);
+        
+        // Add a close button
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Close';
+        closeBtn.style.position = 'fixed';
+        closeBtn.style.bottom = '20px';
+        closeBtn.style.left = '50%';
+        closeBtn.style.transform = 'translateX(-50%)';
+        closeBtn.style.padding = '8px 20px';
+        closeBtn.style.backgroundColor = '#4CAF50';
+        closeBtn.style.color = 'white';
+        closeBtn.style.border = 'none';
+        closeBtn.style.borderRadius = '4px';
+        closeBtn.style.zIndex = '10000';
+        closeBtn.onclick = () => {
+          document.body.removeChild(img);
+          document.body.removeChild(instruction);
+          document.body.removeChild(closeBtn);
+          URL.revokeObjectURL(img.src);
+        };
+        document.body.appendChild(closeBtn);
+        
+        setIsSaving(false);
+      })
+      .catch((err) => {
+        console.error('Error saving image:', err);
+        alert('Error saving image. Please try again.');
+        setIsSaving(false);
+      });
+    } else {
+      // Regular download for non-iOS devices
+      toPng(greentextRef.current, { 
+        cacheBust: true,
+        style: {
+          backgroundColor: bgColor
+        },
+        pixelRatio: window.devicePixelRatio || 1
+      })
       .then((dataUrl) => {
         const link = document.createElement('a');
         link.download = filename;
@@ -171,6 +260,7 @@ const GreentextGenerator = () => {
         alert('Error saving image. Please try again.');
         setIsSaving(false);
       });
+    }
   };
 
   return (
@@ -341,7 +431,12 @@ const GreentextGenerator = () => {
                 Saving...
               </>
             ) : (
-              'Save as PNG'
+              <>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                {isIOS ? 'Save to Photo Library' : 'Save as PNG'}
+              </>
             )}
           </button>
         </div>
@@ -355,7 +450,7 @@ const GreentextGenerator = () => {
           <li>Choose from different board themes to style your post (Classic, Yotsuba, Serious, or Yotsuba Pink).</li>
           <li>Optionally upload an image to include with your post.</li>
           <li>The preview will update in real-time as you type.</li>
-          <li>Click "Save as PNG" to download your creation as a PNG image.</li>
+          <li>Click "Save to Photo Library" (iOS) or "Save as PNG" (other platforms) to save your creation.</li>
           <li>Toggle between light and dark mode using the button in the top-right corner (affects UI only).</li>
         </ul>
       </div>
