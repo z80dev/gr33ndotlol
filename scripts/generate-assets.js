@@ -8,6 +8,16 @@ if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
 }
 
+// Check if files already exist and skip generation if they do (for faster dev cycles)
+const skipIfExists = process.argv.includes('--skip-if-exists');
+const socialPreviewPath = path.join(publicDir, 'social-preview.png');
+const faviconPath = path.join(publicDir, 'favicon.ico');
+
+if (skipIfExists && fs.existsSync(socialPreviewPath) && fs.existsSync(faviconPath)) {
+  console.log('Social preview and favicon already exist, skipping generation.');
+  process.exit(0);
+}
+
 // Generate social preview image
 function generateSocialPreview() {
   // Standard size for Twitter/FB previews - 1200x630
@@ -53,7 +63,7 @@ function generateSocialPreview() {
 
   // Write to file
   const buffer = canvas.toBuffer('image/png');
-  fs.writeFileSync(path.join(publicDir, 'social-preview.png'), buffer);
+  fs.writeFileSync(socialPreviewPath, buffer);
   console.log('Social preview image created!');
 }
 
@@ -76,7 +86,7 @@ function generateFavicon() {
 
   // Write to file
   const buffer = canvas.toBuffer('image/png');
-  fs.writeFileSync(path.join(publicDir, 'favicon.ico'), buffer);
+  fs.writeFileSync(faviconPath, buffer);
   console.log('Favicon created!');
 }
 
