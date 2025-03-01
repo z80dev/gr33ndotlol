@@ -32,12 +32,12 @@ const BOARD_THEMES = {
   },
   tomorrow: {
     name: "Tomorrow",
-    postBg: "bg-blue-900", // Blue background for /biz/ style
-    headerBg: "bg-blue-800", // Darker blue header
-    borderColor: "border-blue-700",
-    textColor: "text-gray-100",
-    secondaryText: "text-gray-300",
-    // Green text color stays default
+    postBg: "bg-blue-200", // Blue background for /biz/ style
+    headerBg: "bg-blue-300", // Lighter blue header
+    borderColor: "border-blue-400", 
+    textColor: "text-gray-900", // Darker text for better readability on light blue
+    secondaryText: "text-gray-700", // Darker secondary text
+    greenTextColor: "text-emerald-600" // Darker green for better readability on blue
   },
   yotsubaPink: {
     name: "Yotsuba Pink",
@@ -98,8 +98,10 @@ const GreentextGenerator = () => {
     return text.split('\n').map((line, index) => {
       // If line starts with '>', color it green
       if (line.trim().startsWith('>')) {
+        // Use custom green color for Tomorrow theme, default for others
+        const greenColorClass = BOARD_THEMES[boardTheme].greenTextColor || "text-green-500";
         return (
-          <p key={index} className="text-green-500">{line}</p>
+          <p key={index} className={greenColorClass}>{line}</p>
         );
       }
       return <p key={index}>{line}</p>;
@@ -126,7 +128,7 @@ const GreentextGenerator = () => {
       // Yotsuba theme
       'bg-amber-50': '#fffbeb',
       // Tomorrow theme (blue for /biz/)
-      'bg-blue-900': '#1e3a8a',
+      'bg-blue-200': '#bfdbfe',
       // Yotsuba Pink theme
       'bg-pink-50': '#fdf2f8'
     };
